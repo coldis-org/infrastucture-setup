@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 # Default script behavior.
 set -o errexit
-set -o nounset
-set -o pipefail
+#set -o pipefail
 
 # Debug is disabled by default.
 DEBUG=false
@@ -13,37 +12,39 @@ DEBUG_OPT=
 AWS_CONFIG_FILE=false
 
 # For each argument.
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-do
-	ARG_KEY="${1}"
-	case ${ARG_KEY} in
-
+while :; do
+	case ${1} in
+		
 		# Debug argument.
 		--debug)
-		DEBUG=true
-		DEBUG_OPT="--debug"
-		shift
-		;;
+			DEBUG=true
+			DEBUG_OPT="--debug"
+			;;
 
 		# AWS config file argument.
 		-f|--aws-config-file)
-		AWS_CONFIG_FILE="${2}"
-		shift
-		shift
-		;;
+			AWS_CONFIG_FILE="${2}"
+			shift
+			;;
 
 		# Unkown option.
-		*)
-		# Saves it in an array for later.
-		POSITIONAL+=("${1}") 
-		shift
-		;;
+		-?*)
+			printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+			;;
 
-	esac
+		# No more options.
+		*)
+			break
+
+	esac 
+	shift
 done
-# Restore positional parameters.
-set -- "${POSITIONAL[@]}" 
+
+# Using unavaialble variables should fail the script.
+set -o nounset
+
+# Enables interruption signal handling.
+trap - INT TERM
 
 # Puts the AWS config information in the the conext variables.
 if [ -f ${AWS_CONFIG_FILE} ]
@@ -53,18 +54,19 @@ then
 fi
 
 # Print arguments if on debug mode.
-${DEBUG} && echo  "Running 'aws_setup.sh'"
+${DEBUG} && echo  "Running 'aws_setup'"
 ${DEBUG} && ${AWS_CONFIG_FILE} && echo "AWS_CONFIG_FILE=${AWS_CONFIG_FILE}"
-
-# Enables interruption signal handling.
-trap - INT TERM
 
 # Puts the AWS config information in the the conext variables.
 . ${AWS_CONFIG_FILE}
 ${DEBUG} && cat ${AWS_CONFIG_FILE}
 
 # Creates AWS IAM groups and users.
-${BASH_SOURCE%/*}/aws_iam_create_admin_group_users.sh --aws-config-file ${AWS_CONFIG_FILE} \
+aws_iam_create_admin_group_users --aws-config-file ${AWS_CONFIG_FILE} \
 		${DEBUG_OPT}
+		
+# Print script end if on debug mode.
+${DEBUG} && echo  "Finishing 'aws_setup'"
+
 
 
