@@ -10,20 +10,20 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.coldis.library</groupId>
-	<artifactId>utils-aws</artifactId>
+	<groupId>org.coldis.infrastructure</groupId>
+	<artifactId>utils-operational</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>AWS utilities</name>
+	<name>Infrastucture operational utilities</name>
 
 	<properties>
 	</properties>
 
 	<scm>
-		<url>https://github.com/coldis-org/utils-aws</url>
-		<connection>scm:git:https://github.com/coldis-org/utils-aws.git</connection>
-		<developerConnection>scm:git:git@github.com:coldis-org/utils-aws.git</developerConnection>
+		<url>https://github.com/coldis-org/infrastructure-utils-operational</url>
+		<connection>scm:git:https://github.com/coldis-org/infrastructure-utils-operational.git</connection>
+		<developerConnection>scm:git:git@github.com:coldis-org/infrastructure-utils-operational.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 

@@ -8,8 +8,10 @@ set -o errexit
 DEBUG=false
 DEBUG_OPT=
 
-# No config file by default.
-AWS_CONFIG_FILE=false
+# Default paramentes.
+AWS_CONFIG_FILE=aws_basic_config.properties
+AWS_IAM_GROUP_USERS_PASSWORD=
+AWS_IAM_USER_ACCESS_KEY_FILENAME=
 
 # For each argument.
 while :; do
@@ -63,6 +65,12 @@ while :; do
 			shift
 			;;
 		
+		# Access key file name. In this case, no profile is created.
+		--aws-iam-user-access-key-filename)
+			readonly AWS_IAM_USER_ACCESS_KEY_FILENAME="${2}"
+			shift
+			;;
+		
 		# AWS config file argument.
 		-f|--aws-config-file)
 			AWS_CONFIG_FILE="${2}"
@@ -88,22 +96,25 @@ set -o nounset
 # Enables interruption signal handling.
 trap - INT TERM
 
-# Puts the AWS config information in the the conext variables.
+# Puts the AWS config information in the the context variables.
 if [ -f ${AWS_CONFIG_FILE} ]
 then 
+	set -a
 	. ${AWS_CONFIG_FILE}
+	set +a
 	${DEBUG} && cat ${AWS_CONFIG_FILE}
 fi
 
 # Print arguments if on debug mode.
 ${DEBUG} && echo  "Running 'aws_iam_create_group_users'"
-${DEBUG} && ${AWS_CONFIG_FILE} && echo "AWS_CONFIG_FILE=${AWS_CONFIG_FILE}"
+${DEBUG} && echo "AWS_CONFIG_FILE=${AWS_CONFIG_FILE}"
 ${DEBUG} && echo "AWS_IAM_GROUP_PATH=${AWS_IAM_GROUP_PATH}"
 ${DEBUG} && echo "AWS_IAM_GROUP_NAME=${AWS_IAM_GROUP_NAME}"
 ${DEBUG} && echo "AWS_IAM_GROUP_POLICIES=${AWS_IAM_GROUP_POLICIES}"
 ${DEBUG} && echo "AWS_IAM_GROUP_USERS_PATH=${AWS_IAM_GROUP_USERS_PATH}"
 ${DEBUG} && echo "AWS_IAM_GROUP_USERS_NAMES=${AWS_IAM_GROUP_USERS_NAMES}"
 ${DEBUG} && echo "AWS_IAM_GROUP_USERS_PASSWORD=${AWS_IAM_GROUP_USERS_PASSWORD}"
+${DEBUG} && echo "AWS_IAM_USER_ACCESS_KEY_FILENAME=${AWS_IAM_USER_ACCESS_KEY_FILENAME}"
 
 # If there is no AWS IAM group for the name.
 if aws iam get-group --group-name ${AWS_IAM_GROUP_NAME} || false
@@ -143,11 +154,26 @@ do
 			aws iam create-user \
 					--path ${AWS_IAM_GROUP_USERS_PATH} \
 					--user-name ${AWS_IAM_USER_NAME}
-			${DEBUG} && echo "Creating user profile '${AWS_IAM_USER_NAME}'"
-			aws iam create-login-profile \
-					--user-name ${AWS_IAM_USER_NAME} \
-					--password ${AWS_IAM_GROUP_USERS_PASSWORD} \
-					--password-reset-required
+			# If it is a service user.
+			if [ "${AWS_IAM_USER_ACCESS_KEY_FILENAME}" != "" ]
+			then
+				${DEBUG} && echo "Creating access key '${AWS_IAM_USER_NAME}'"
+				AWS_ACCESS_KEY=`aws iam create-access-key --user-name ${AWS_IAM_USER_NAME}`
+				touch ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
+				echo "AWS_ACCESS_KEY_ID=`jq -r '.AccessKey.AccessKeyId' <<EOF
+${AWS_ACCESS_KEY}
+EOF`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
+				echo "AWS_SECRET_ACCESS_KEY=`jq -r '.AccessKey.SecretAccessKey' <<EOF
+${AWS_ACCESS_KEY}
+EOF`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
+			# If it is not a service user.
+			else 
+				${DEBUG} && echo "Creating user profile '${AWS_IAM_USER_NAME}'"
+				aws iam create-login-profile \
+						--user-name ${AWS_IAM_USER_NAME} \
+						--password ${AWS_IAM_GROUP_USERS_PASSWORD} \
+						--password-reset-required
+			fi
 		fi
 		# Adds the user to the group.
 		${DEBUG} && echo "Adding user '${AWS_IAM_USER_NAME}' to group '${AWS_IAM_GROUP_NAME}'"

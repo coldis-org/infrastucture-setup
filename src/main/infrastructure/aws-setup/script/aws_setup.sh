@@ -8,8 +8,9 @@ set -o errexit
 DEBUG=false
 DEBUG_OPT=
 
-# No config file by default.
-AWS_CONFIG_FILE=false
+# Default paramentes..
+AWS_CONFIG_FILE=aws_basic_config.properties
+AWS_IAM_CONFIG_FILE=aws_setup_iam_config.properties
 
 # For each argument.
 while :; do
@@ -27,8 +28,14 @@ while :; do
 			shift
 			;;
 
+		# AWS IAM config file argument.
+		--aws-iam-config-file)
+			AWS_IAM_CONFIG_FILE="${2}"
+			shift
+			;;
+
 		# Unkown option.
-		-?*)
+		?*)
 			printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
 			;;
 
@@ -46,23 +53,14 @@ set -o nounset
 # Enables interruption signal handling.
 trap - INT TERM
 
-# Puts the AWS config information in the the conext variables.
-if [ -f ${AWS_CONFIG_FILE} ]
-then 
-	. ${AWS_CONFIG_FILE}
-	${DEBUG} && cat ${AWS_CONFIG_FILE}
-fi
-
 # Print arguments if on debug mode.
 ${DEBUG} && echo  "Running 'aws_setup'"
-${DEBUG} && ${AWS_CONFIG_FILE} && echo "AWS_CONFIG_FILE=${AWS_CONFIG_FILE}"
-
-# Puts the AWS config information in the the conext variables.
-. ${AWS_CONFIG_FILE}
-${DEBUG} && cat ${AWS_CONFIG_FILE}
+${DEBUG} && echo "AWS_CONFIG_FILE=${AWS_CONFIG_FILE}"
+${DEBUG} && echo "AWS_IAM_CONFIG_FILE=${AWS_IAM_CONFIG_FILE}"
 
 # Creates AWS IAM groups and users.
 aws_iam_create_admin_group_users --aws-config-file ${AWS_CONFIG_FILE} \
+		--aws-iam-config-file ${AWS_IAM_CONFIG_FILE} \
 		${DEBUG_OPT}
 		
 # Print script end if on debug mode.
