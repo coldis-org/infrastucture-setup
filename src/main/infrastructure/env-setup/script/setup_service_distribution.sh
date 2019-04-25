@@ -66,13 +66,12 @@ ${DEBUG} && echo "DCOS_TEMP_SERVICE_FILE=${DCOS_TEMP_SERVICE_FILE}"
 # Updates the service config.
 DCOS_SERVICE=`jq ".container.docker.image = \"${CONTAINER_IMAGE}\"" < ${DCOS_TEMP_SERVICE_FILE}`
 echo "${DCOS_SERVICE}" > ${WORK_DIRECTORY}/${DCOS_TEMP_SERVICE_FILE}
-${DEBUG} && echo ${DCOS_SERVICE}
+${DEBUG} && echo "${DCOS_SERVICE}"
 
 # Create internal access control service.
-docker run --rm \
+docker run --rm -i \
 	--env-file ${WORK_DIRECTORY}/${DCOS_CONFIG_FILE}\
-	-v ${WORK_DIRECTORY}:/project \
 	coldis/dcos-cli \
-	dcos_deploy_marathon ${DEBUG_OPT} -f ${DCOS_TEMP_SERVICE_FILE}
+	"dcos_deploy_marathon ${DEBUG_OPT}" < ${DCOS_TEMP_SERVICE_FILE}
 rm -f ${WORK_DIRECTORY}/${DCOS_TEMP_SERVICE_FILE}
 
