@@ -9,7 +9,7 @@ DEBUG=false
 DEBUG_OPT=
 
 # Default parameters.
-CONTAINER_IMAGE=dinkel/openldap:2.4.40
+CONTAINER_IMAGE=sonatype/nexus3:3.16.0
 TEMP_SERVICE_FILE=temp-service.json
 
 # For each argument.
@@ -34,12 +34,6 @@ while :; do
 			shift
 			;;
 			
-		# Passwords file argument.
-		-p|--secrets-file)
-			SECRETS_FILE=${2}
-			shift
-			;;
-			
 		# Work directory.
 		-d|--work-directory)
 			WORK_DIRECTORY=${2}
@@ -47,7 +41,7 @@ while :; do
 			;;
 
 		# Unkown option.
-		-?*)
+		?*)
 			printf 'WARN: Unknown option (ignored): %s\n' "${1}" >&2
 			;;
 
@@ -66,21 +60,13 @@ set -o nounset
 trap - INT TERM
 
 # Print arguments if on debug mode.
-${DEBUG} && echo  "Running 'production_setup_internal_ac.sh'"
-${DEBUG} && echo  "DCOS_CONFIG_FILE=${DCOS_CONFIG_FILE}"
-${DEBUG} && echo  "DCOS_SERVICE_FILE=${DCOS_SERVICE_FILE}"
-${DEBUG} && echo  "SECRETS_FILE=${SECRETS_FILE}"
-
-# Makes sure the variables are available for the script.
-set -a
-. ${SECRETS_FILE}
-set +a
+${DEBUG} && echo "Running 'production_setup_software_repository_service'"
+${DEBUG} && echo "DCOS_CONFIG_FILE=${DCOS_CONFIG_FILE}"
+${DEBUG} && echo "DCOS_SERVICE_FILE=${DCOS_SERVICE_FILE}"
+${DEBUG} && echo "WORK_DIRECTORY=${WORK_DIRECTORY}"
 
 # Gets the service config.
-SERVICE_CONFIG=`envsubst < ${DCOS_SERVICE_FILE}`
-SERVICE_CONFIG=`jq ".container.docker.image = \"${CONTAINER_IMAGE}\"" <<EOF
-${SERVICE_CONFIG}
-EOF`
+SERVICE_CONFIG=`jq ".container.docker.image = \"${CONTAINER_IMAGE}\"" < ${DCOS_SERVICE_FILE}`
 echo ${SERVICE_CONFIG} > ${WORK_DIRECTORY}/${TEMP_SERVICE_FILE}
 ${DEBUG} && echo ${SERVICE_CONFIG}
 
@@ -88,7 +74,7 @@ ${DEBUG} && echo ${SERVICE_CONFIG}
 docker run --rm \
 	--env-file ${DCOS_CONFIG_FILE}\
 	-v ${WORK_DIRECTORY}:/project \
-	coldis.org/dcos-cli \
+	coldis/dcos-cli \
 	dcos_deploy_marathon -f ${TEMP_SERVICE_FILE} ${DEBUG_OPT}
 rm -f ${WORK_DIRECTORY}/${TEMP_SERVICE_FILE}
 

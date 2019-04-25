@@ -67,11 +67,11 @@ set -o nounset
 trap - INT TERM
 
 # Print arguments if on debug mode.
-${DEBUG} && echo  "Running 'random_password_replacer'"
-${DEBUG} && echo  "PASSWORD_PATTERN=${PASSWORD_PATTERN}"
-${DEBUG} && echo  "PASSWORD_SIZE=${PASSWORD_SIZE}"
-${DEBUG} && echo  "REPLACE_PATTERN=${REPLACE_PATTERN}"
-${DEBUG} && echo  "PASSWORD_FILE=${PASSWORD_FILE}"
+${DEBUG} && echo "Running 'random_password_replacer'"
+${DEBUG} && echo "PASSWORD_PATTERN=${PASSWORD_PATTERN}"
+${DEBUG} && echo "PASSWORD_SIZE=${PASSWORD_SIZE}"
+${DEBUG} && echo "REPLACE_PATTERN=${REPLACE_PATTERN}"
+${DEBUG} && echo "PASSWORD_FILE=${PASSWORD_FILE}"
 
 # While there are passwords to be created.
 while grep -q "${REPLACE_PATTERN}" ${PASSWORD_FILE}

@@ -162,10 +162,12 @@ do
 				touch ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
 				echo "AWS_ACCESS_KEY_ID=`jq -r '.AccessKey.AccessKeyId' <<EOF
 ${AWS_ACCESS_KEY}
-EOF`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
+EOF
+`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
 				echo "AWS_SECRET_ACCESS_KEY=`jq -r '.AccessKey.SecretAccessKey' <<EOF
 ${AWS_ACCESS_KEY}
-EOF`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
+EOF
+`" >> ${AWS_IAM_USER_ACCESS_KEY_FILENAME}_${AWS_IAM_USER_NAME}.properties
 			# If it is not a service user.
 			else 
 				${DEBUG} && echo "Creating user profile '${AWS_IAM_USER_NAME}'"

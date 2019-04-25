@@ -87,35 +87,44 @@ fi
 # Gets the docker container config.
 CONTAINER_NAME="--name `jq -r '.id' <<EOF
 ${SERVICE_CONFIG}
-EOF`"
+EOF
+`"
 IMAGE_NAME="`jq -r '.container.docker.image' <<EOF
 ${SERVICE_CONFIG}
-EOF`"
+EOF
+`"
 ENV_VARIABLES=""
 for ENV_VARIABLE in `jq -r '.env | keys[]' <<EOF
 ${SERVICE_CONFIG}
-EOF`
+EOF
+`
 do
 	ENV_VARIABLES="${ENV_VARIABLES} -e ${ENV_VARIABLE}=`jq \".env.${ENV_VARIABLE}\" <<EOF
 ${SERVICE_CONFIG}
-EOF`"
+EOF
+`"
 done
 PORT_MAPPINGS=""
 for PORT_MAPPING in `jq -c '.container.portMappings[]' <<EOF
 ${SERVICE_CONFIG}
-EOF`
+EOF
+`
 do
 	PORT_MAPPINGS="${PORT_MAPPINGS} -p `jq -r .hostPort'' <<EOF
 ${PORT_MAPPING}
-EOF`:`jq -r '.containerPort'<<EOF
+EOF
+`:`jq -r '.containerPort'<<EOF
 ${PORT_MAPPING}
-EOF`"
+EOF
+`"
 done
 RESOURCES_LIMIT="--memory=`jq -r '.mem'<<EOF
 ${SERVICE_CONFIG}
-EOF`M --cpus=`jq -r '.cpus' <<EOF
+EOF
+`M --cpus=`jq -r '.cpus' <<EOF
 ${SERVICE_CONFIG}
-EOF`"
+EOF
+`"
 
 # Runs the docker command.
 ${DEBUG} && echo "docker run ${CONTAINER_NAME} ${ENV_VARIABLES} ${PORT_MAPPINGS} ${RESOURCES_LIMIT} -d ${IMAGE_NAME}"

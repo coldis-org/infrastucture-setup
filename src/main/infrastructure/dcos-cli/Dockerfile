@@ -1,6 +1,22 @@
 # From debian.
 FROM debian:8.11-slim
 
+# Sets locale and UTF-8 charset.
+ENV TZ=America/Sao_Paulo
+ENV LANG_FILE=pt_BR.UTF-8
+ENV LANG=pt_BR.utf8
+ENV LANGUAGE=pt_BR:pt
+RUN apt-get update -y && \
+	apt-get purge -y locales && \
+	apt-get install -y locales && \
+	rm /usr/share/locale/locale.alias && \
+	ln -s /etc/locale.alias /usr/share/locale/locale.alias && \
+	localedef -i pt_BR -c -f UTF-8 -A /usr/share/locale/locale.alias ${LANG_FILE} && \
+	cp /usr/share/zoneinfo/${TZ} /etc/localtime && \
+	apt-get purge -y locales && \
+	apt-get clean -y && \
+	rm -rf /var/lib/apt/lists/*
+
 # Installs DCOS CLI.
 RUN [ -d /usr/local/bin ] || sudo mkdir -p /usr/local/bin && \
 	apt-get update -y && \

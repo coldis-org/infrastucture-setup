@@ -5,7 +5,7 @@ RUN apk --update add jq && \
 	rm -rf /var/lib/apt/lists/* && \
 	rm /var/cache/apk/*
 
-# Copies the aws scripts.
+# Copies the scripts.
 RUN mkdir -p /opt/aws-script
 COPY script /opt/aws-script
 RUN ln -s /opt/aws-script/*.sh /usr/bin && \
