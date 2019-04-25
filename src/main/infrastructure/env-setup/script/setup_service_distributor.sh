@@ -10,7 +10,7 @@ DEBUG_OPT=
 
 # Default parameters.
 WORK_DIRECTORY=/project
-CONTAINER_IMAGE=coldis/service-distribution-http-load-balancer
+CONTAINER_IMAGE=coldis/service-distributor-http-load-balancer
 DCOS_CONFIG_FILE=dcos_cli.properties
 DCOS_TEMP_SERVICE_FILE=temp-service.json
 
